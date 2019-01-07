@@ -36,7 +36,7 @@ namespace OT {
 
 
 static inline void SingleSubst_serialize (hb_serialize_context_t *c,
-					  hb_array_t<const GlyphID> glyphs,
+					  hb_sorted_array_t<const GlyphID> glyphs,
 					  hb_array_t<const GlyphID> substitutes);
 
 struct SingleSubstFormat1
@@ -94,7 +94,7 @@ struct SingleSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  int delta)
   {
     TRACE_SERIALIZE (this);
@@ -109,7 +109,7 @@ struct SingleSubstFormat1
     TRACE_SUBSET (this);
     const hb_set_t &glyphset = *c->plan->glyphset;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
-    hb_vector_t<GlyphID> from;
+    hb_sorted_vector_t<GlyphID> from;
     hb_vector_t<GlyphID> to;
     hb_codepoint_t delta = deltaGlyphID;
     for (/*TODO(C++11)auto*/Coverage::iter_t iter = (this+coverage).iter (); iter; iter++)
@@ -193,7 +193,7 @@ struct SingleSubstFormat2
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const GlyphID> substitutes)
   {
     TRACE_SERIALIZE (this);
@@ -208,7 +208,7 @@ struct SingleSubstFormat2
     TRACE_SUBSET (this);
     const hb_set_t &glyphset = *c->plan->glyphset;
     const hb_map_t &glyph_map = *c->plan->glyph_map;
-    hb_vector_t<GlyphID> from;
+    hb_sorted_vector_t<GlyphID> from;
     hb_vector_t<GlyphID> to;
     for (/*TODO(C++11)auto*/Coverage::iter_t iter = (this+coverage).iter (); iter; iter++)
     {
@@ -242,7 +242,7 @@ struct SingleSubstFormat2
 struct SingleSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const GlyphID> substitutes)
   {
     TRACE_SERIALIZE (this);
@@ -290,7 +290,7 @@ struct SingleSubst
 
 static inline void
 SingleSubst_serialize (hb_serialize_context_t *c,
-		       hb_array_t<const GlyphID> glyphs,
+		       hb_sorted_array_t<const GlyphID> glyphs,
 		       hb_array_t<const GlyphID> substitutes)
 { c->start_embed<SingleSubst> ()->serialize (c, glyphs, substitutes); }
 
@@ -343,10 +343,10 @@ struct Sequence
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs)
+		  hb_array_t<const GlyphID> subst)
   {
     TRACE_SERIALIZE (this);
-    return_trace (substitute.serialize (c, glyphs));
+    return_trace (substitute.serialize (c, subst));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -408,7 +408,7 @@ struct MultipleSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const unsigned int> substitute_len_list,
 		  hb_array_t<const GlyphID> substitute_glyphs_list)
   {
@@ -454,7 +454,7 @@ struct MultipleSubstFormat1
 struct MultipleSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const unsigned int> substitute_len_list,
 		  hb_array_t<const GlyphID> substitute_glyphs_list)
   {
@@ -528,10 +528,10 @@ struct AlternateSet
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs)
+		  hb_array_t<const GlyphID> alts)
   {
     TRACE_SERIALIZE (this);
-    return_trace (alternates.serialize (c, glyphs));
+    return_trace (alternates.serialize (c, alts));
   }
 
   bool sanitize (hb_sanitize_context_t *c) const
@@ -598,7 +598,7 @@ struct AlternateSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const unsigned int> alternate_len_list,
 		  hb_array_t<const GlyphID> alternate_glyphs_list)
   {
@@ -644,7 +644,7 @@ struct AlternateSubstFormat1
 struct AlternateSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> glyphs,
+		  hb_sorted_array_t<const GlyphID> glyphs,
 		  hb_array_t<const unsigned int> alternate_len_list,
 		  hb_array_t<const GlyphID> alternate_glyphs_list)
   {
@@ -939,7 +939,7 @@ struct LigatureSubstFormat1
   }
 
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> first_glyphs,
+		  hb_sorted_array_t<const GlyphID> first_glyphs,
 		  hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
 		  hb_array_t<const GlyphID> ligatures_list,
 		  hb_array_t<const unsigned int> component_count_list,
@@ -990,7 +990,7 @@ struct LigatureSubstFormat1
 struct LigatureSubst
 {
   bool serialize (hb_serialize_context_t *c,
-		  hb_array_t<const GlyphID> first_glyphs,
+		  hb_sorted_array_t<const GlyphID> first_glyphs,
 		  hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
 		  hb_array_t<const GlyphID> ligatures_list,
 		  hb_array_t<const unsigned int> component_count_list,
@@ -1346,7 +1346,7 @@ struct SubstLookup : Lookup
 
   bool serialize_single (hb_serialize_context_t *c,
 			 uint32_t lookup_props,
-		         hb_array_t<const GlyphID> glyphs,
+		         hb_sorted_array_t<const GlyphID> glyphs,
 		         hb_array_t<const GlyphID> substitutes)
   {
     TRACE_SERIALIZE (this);
@@ -1356,7 +1356,7 @@ struct SubstLookup : Lookup
 
   bool serialize_multiple (hb_serialize_context_t *c,
 			   uint32_t lookup_props,
-			   hb_array_t<const GlyphID> glyphs,
+			   hb_sorted_array_t<const GlyphID> glyphs,
 			   hb_array_t<const unsigned int> substitute_len_list,
 			   hb_array_t<const GlyphID> substitute_glyphs_list)
   {
@@ -1370,7 +1370,7 @@ struct SubstLookup : Lookup
 
   bool serialize_alternate (hb_serialize_context_t *c,
 			    uint32_t lookup_props,
-			    hb_array_t<const GlyphID> glyphs,
+			    hb_sorted_array_t<const GlyphID> glyphs,
 			    hb_array_t<const unsigned int> alternate_len_list,
 			    hb_array_t<const GlyphID> alternate_glyphs_list)
   {
@@ -1384,7 +1384,7 @@ struct SubstLookup : Lookup
 
   bool serialize_ligature (hb_serialize_context_t *c,
 			   uint32_t lookup_props,
-			   hb_array_t<const GlyphID> first_glyphs,
+			   hb_sorted_array_t<const GlyphID> first_glyphs,
 			   hb_array_t<const unsigned int> ligature_per_first_glyph_count_list,
 			   hb_array_t<const GlyphID> ligatures_list,
 			   hb_array_t<const unsigned int> component_count_list,
